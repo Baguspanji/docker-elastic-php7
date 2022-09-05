@@ -1,0 +1,40 @@
+version: '2.2'
+
+services:
+  db:
+    image: postgres:12-alpine
+    container_name: ${APP_NAME}-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DATABASE: ${DB_DATABASE}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    ports:
+      - ${DB_PORT}:5432
+    networks:
+      - elastic
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./volumes/database:/initdb
+
+  nginx:
+    image: nginx:alpine
+    container_name: ${APP_NAME}-nginx
+    restart: unless-stopped
+    ports:
+      - ${APP_PORT}:80
+    volumes:
+      - ${APP_SRC}:/var/www
+      - ./volumes/nginx:/etc/nginx/conf.d
+    networks:
+      - elastic
+
+volumes:
+  db:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
